@@ -42,7 +42,12 @@ struct LandingView: View {
                     
                 }
                 .searchable(text: $searchText)
-                
+                .onChange(of: searchText) {
+                    Task {
+                        try await viewModel.filterTodos(on: searchText)
+                    }
+                }
+
                 HStack {
                     TextField("Enter a to-do item", text: $newItemDescription)
                     
