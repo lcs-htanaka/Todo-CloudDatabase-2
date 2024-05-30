@@ -26,56 +26,78 @@ struct LandingView: View {
             
             VStack {
                 
-                List($viewModel.todos) { $todo in
+                if viewModel.todos.isEmpty{
                     
-                    ItemView(currentItem: $todo)
+                    //Show the prompt to add a new to-do item
+                    ContentUnavailableView(
+                        "No to-do items",
+                        systemImage: "pencil.tip.crop.circle.badge.plus",
+                        description: Text("Add a reminder to get started")
+                    )
+                    
+                } else {
+                    
+                    //Show the list of items
+                    List($viewModel.todos) { $todo in
+                        
+                        ItemView(currentItem: $todo)
                         // Delete item
-                        .swipeActions {
-                            Button(
-                                "Delete",
-                                role: .destructive,
-                                action: {
-                                    viewModel.delete(todo)
-                                }
-                            )
-                        }
+                            .swipeActions {
+                                Button(
+                                    "Delete",
+                                    role: .destructive,
+                                    action: {
+                                        viewModel.delete(todo)
+                                    }
+                                )
+                            }
+                        
+                    }
+                    
                     
                 }
-                .searchable(text: $searchText)
-                .onChange(of: searchText) {
-                    Task {
-                        try await viewModel.filterTodos(on: searchText)
-                    }
-                }
-
-         
+                
+                
                 
             }
-            .navigationTitle("To do")
-            //Show the sheet to add a new item
-            .sheet(isPresented: $presentingNewItemSheet) {
-                NewItemView(showSheet: $presentingNewItemSheet)
-                    .presentationDetents([.medium, .fraction(0.15)])
-            }
-            // Add a tool bar to the top of the interface
-            // NOTE: For a toolbar to appear, it must be
-            //       inside a NavigationView or NavigationStack.
-            .toolbar {
-                // Add a button to trigger showing the sheet
-                ToolbarItem(placement: .automatic) {
-                    Button {
-                        presentingNewItemSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
+            
             
         }
         .environment(viewModel)
+        .navigationTitle("To do")
+        //Show the sheet to add a new item
+        .sheet(isPresented: $presentingNewItemSheet) {
+            NewItemView(showSheet: $presentingNewItemSheet)
+                .presentationDetents([.medium, .fraction(0.15)])
+        }
+        // Add a tool bar to the top of the interface
+        // NOTE: For a toolbar to appear, it must be
+        //       inside a NavigationView or NavigationStack.
+        .toolbar {
+            // Add a button to trigger showing the sheet
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    presentingNewItemSheet = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        //Handle searching in the text
+        .searchable(text: $searchText)
+        .onChange(of: searchText) {
+            Task {
+                try await viewModel.filterTodos(on: searchText)
+            }
+        }
+
+        
+        
     }
     
 }
+
+
 
 #Preview {
     LandingView()
